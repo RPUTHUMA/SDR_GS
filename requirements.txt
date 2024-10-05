@@ -1,0 +1,6 @@
+openai
+groq
+pandas
+openpyxl
+streamlit
+ollama
