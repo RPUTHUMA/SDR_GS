@@ -6,20 +6,21 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from utils_localllama import *
+from utils_perplexity import *
 
 # Streamlit App
 # Set page config to use full screen
 st.set_page_config(layout="wide")
 # Create pages
-page = st.sidebar.selectbox("Choose a page", ["About Us", "Gensoic's SDR AI"])
+page = st.sidebar.selectbox("Choose a page", ["About Us", "Genzoic's SDR AI"])
 
 # Section 1: About Us
 if page == "About Us":
-    st.title("Welcome To Gensoic")
+    st.title("Welcome To Genzoic")
     st.header("About Us")
     with st.expander("Read More"):
         company_description = """
-                                Gensoic revolutionizes productivity by crafting cutting-edge generative AI assistants 
+                                Genzoic revolutionizes productivity by crafting cutting-edge generative AI assistants 
                                 that automate mundane daily tasks.
 
                                 Leveraging expertise in AI innovation, we offer: \n
@@ -34,12 +35,12 @@ if page == "About Us":
         st.write(company_description)
     st.image("AI-assistant.jpg", use_column_width=True)
     st.subheader("Contact Us:")
-    st.write("Email: [gensoic@example.com](mailto:gensoic@example.com)")
+    st.write("Email: [genzoic@example.com](mailto:genzoic@example.com)")
     st.write("Phone: +1-123-456-7890")
     st.write("Address: 123 Main Street, ABC, USA 12345")
 
 # Section 2: Lead Upload and Preview
-elif page == "Gensoic's SDR AI":
+elif page == "Genzoic's SDR AI":
     st.title("Revolutionize Your Sales Workflow using - SDR AI Assistant")
     st.write("Provide the Lead details from google sheet")
     # Google Sheets API settings
@@ -199,27 +200,39 @@ elif page == "Gensoic's SDR AI":
                 fetch_company_button = st.button("Company")
             with col2:
                 fetch_user_button = st.button("User")
-
+            for index, row in selected_df.iterrows():
+                # Append lead data to session state
+                st.session_state.records = []
+                st.session_state.records.append({
+                    "Name": row[0],
+                    "Email": row[1],
+                    "Company": row[2],
+                    "LinkedIn": row[3],
+                    "Context": row[4],
+                    "First_Follow_Up": row[5],
+                    "Email_status": row[6],
+                    "Second_Follow_up": row[7]
+                })
             # Button actions
             if fetch_company_button:
-                st.write(f"Fetching latest work done by selected_df['Company'] ............")
-            if mail_button:
-                st.write(f"Fetching latest work done by selected_df['Name'] ............")
+                for lead in st.session_state.records:
+                    st.write("Using perplexity to fetch from internet the latest information.......")
+                    prompt = f"Search about the {lead['Company']} in internet(new,blog etc) and check what all latest things they have undertaken\
+                            in AI & ML field. Generate a summary in 200 words to be shown to a sales person. \
+                            The summary should be crisp and relevant"
+                    response = provide_online_checks(prompt)
+                    st.write(response)
+            if fetch_user_button:
+                for lead in st.session_state.records:
+                    st.write("Using perplexity to fetch lead informtion from linkedin.......")
+                    prompt = f"Search about {lead['Name']} in his {lead['LinkedIn']} profile and try to see what kind of post the user likes and posts\
+                    Find if user is interested in AI/ML work and has done something in it. Summarise the information in a paragraph."
+                    response = provide_online_checks(prompt)
+                    st.write(response)
 
             #======================================================================
             #st.write(st.session_state.df)
-            # for index, row in st.session_state.df.iterrows():
-            #     # Append lead data to session state
-            #     st.session_state.records.append({
-            #         "Name": row[1],
-            #         "Email": row[2],
-            #         "Company": row[3],
-            #         "LinkedIn": row[4],
-            #         "Context": row[5],
-            #         "First_Follow_Up": row[6],
-            #         "Email_status": row[7],
-            #         "Second_Follow_up": row[8]
-            #     })
+
             # st.session_state.records = fetch_email_list_and_mail(st.session_state.records)
             # st.session_state.df = pd.DataFrame(st.session_state.records)
             # # Clear existing data and write entire DataFrame
